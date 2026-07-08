@@ -1,0 +1,274 @@
+/* ══════════════════════════════════════════════
+   effects.css  — Premium Visual Polish Layer
+   NON-DESTRUCTIVE: only adds new rules & enhances existing
+   ══════════════════════════════════════════════ */
+
+/* ─── Grain Overlay ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  opacity: 0.028;
+  mix-blend-mode: overlay;
+}
+
+/* ─── Vignette ─── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9996;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 100% 100% at 50% 50%,
+    transparent 40%,
+    rgba(4, 3, 10, 0.55) 100%
+  );
+}
+
+/* ─── Scene Entrance Glow ─── */
+.scene-glow-ring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 60% 40% at 50% 50%,
+    rgba(212, 175, 110, 0.04) 0%,
+    transparent 70%
+  );
+  animation: glow-breathe 6s ease-in-out infinite;
+}
+
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.04); }
+}
+
+/* ─── Text Glow Utilities ─── */
+.text-glow-gold {
+  text-shadow:
+    0 0 30px rgba(212, 175, 110, 0.35),
+    0 0 80px rgba(212, 175, 110, 0.12);
+}
+
+.text-glow-rose {
+  text-shadow:
+    0 0 30px rgba(196, 81, 106, 0.35),
+    0 0 80px rgba(196, 81, 106, 0.12);
+}
+
+/* ─── Enhanced Hero Name ─── */
+.hero-name {
+  text-shadow:
+    0 0 60px rgba(196, 81, 106, 0.18),
+    0 0 120px rgba(212, 175, 110, 0.10),
+    0 2px 4px rgba(4, 3, 10, 0.6) !important;
+}
+
+/* ─── Enhanced Intro Title ─── */
+.intro-line-1 {
+  text-shadow: 0 2px 40px rgba(245, 237, 224, 0.06);
+}
+.intro-line-2 {
+  text-shadow: 0 0 60px rgba(240, 216, 152, 0.2);
+}
+
+/* ─── Final Title Glow ─── */
+.final-title {
+  text-shadow:
+    0 0 50px rgba(212, 175, 110, 0.2),
+    0 0 120px rgba(212, 175, 110, 0.08);
+}
+
+/* ─── Gold Rule Shimmer ─── */
+.intro-rule,
+.hero-rule {
+  position: relative;
+}
+.intro-rule::after,
+.hero-rule::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 160px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 175, 110, 0.5),
+    transparent
+  );
+  animation: rule-shimmer 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes rule-shimmer {
+  0%, 100% { opacity: 0.4; width: 100px; }
+  50%       { opacity: 1;   width: 180px; }
+}
+
+/* ─── Dot Navigation Glow ─── */
+.dot.active {
+  box-shadow:
+    0 0 8px rgba(212, 175, 110, 0.7),
+    0 0 18px rgba(212, 175, 110, 0.3) !important;
+}
+
+/* ─── Progress Bar Shimmer ─── */
+#progress-fill {
+  position: relative;
+  overflow: hidden;
+}
+#progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  animation: progress-shimmer 2.5s ease-in-out infinite;
+}
+@keyframes progress-shimmer {
+  0%   { left: -60%; }
+  100% { left: 140%; }
+}
+
+/* ─── Button Premium Glow States ─── */
+.hero-cta:hover,
+.replay-btn:hover,
+.scene-continue-btn:hover {
+  box-shadow:
+    0 0 20px rgba(212, 175, 110, 0.2),
+    0 0 60px rgba(212, 175, 110, 0.08),
+    inset 0 0 20px rgba(212, 175, 110, 0.04);
+}
+
+/* ─── Gallery Card Premium Border ─── */
+.gallery-item {
+  position: relative;
+}
+.gallery-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(135deg, rgba(212,175,110,0.0), rgba(212,175,110,0.25), rgba(212,175,110,0.0)) border-box;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) padding-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.gallery-item:hover::after {
+  opacity: 1;
+}
+
+/* ─── Message Card Glow on Active ─── */
+.msg-card.active {
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 110, 0.5),
+    0 0 30px rgba(212, 175, 110, 0.12),
+    0 0 60px rgba(212, 175, 110, 0.06);
+}
+
+/* ─── Countdown Ring Glow ─── */
+.ring-progress {
+  filter: drop-shadow(0 0 4px rgba(212, 175, 110, 0.6));
+}
+.countdown-num {
+  text-shadow: 0 0 40px rgba(240, 216, 152, 0.4);
+}
+
+/* ─── Final Heart Premium Glow ─── */
+.final-heart {
+  text-shadow:
+    0 0 20px rgba(196, 81, 106, 0.7),
+    0 0 60px rgba(196, 81, 106, 0.35),
+    0 0 120px rgba(196, 81, 106, 0.15);
+  filter: drop-shadow(0 0 12px rgba(196, 81, 106, 0.5));
+}
+
+/* ─── Story Heading Refined Typography ─── */
+.story-heading {
+  text-shadow: 0 1px 20px rgba(245, 237, 224, 0.06);
+  letter-spacing: -0.01em;
+}
+
+/* ─── Floating Ambient Light: all scenes ─── */
+#scene-0::before,
+#scene-1::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196, 81, 106, 0.06) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+  animation: ambient-pulse 8s ease-in-out infinite;
+}
+@keyframes ambient-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  50%       { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+}
+
+/* ─── Pip Enhanced ─── */
+.pip.active {
+  box-shadow: 0 0 6px rgba(212, 175, 110, 0.8);
+}
+.slider-pip.active {
+  box-shadow: 0 0 6px rgba(212, 175, 110, 0.8);
+}
+
+/* ─── Slide heading glow ─── */
+.slide-heading {
+  text-shadow: 0 0 50px rgba(212, 175, 110, 0.1);
+}
+
+/* ─── Mobile Glow Reduction ─── */
+@media (max-width: 768px) {
+  body::before { opacity: 0.015; }
+  .hero-name   { text-shadow: none !important; }
+  .final-heart { text-shadow: 0 0 20px rgba(196, 81, 106, 0.5); filter: none; }
+  #scene-0::before { width: 300px; height: 300px; }
+}
+
+@media (max-width: 480px) {
+  body::after { opacity: 0.4; }
+  .msg-card.active { box-shadow: 0 0 0 1px rgba(212, 175, 110, 0.5); }
+}
+
+/* ─── Scroll-in Readability ─── */
+.story-text,
+.hero-tagline,
+.final-tagline,
+.slide-text {
+  word-spacing: 0.05em;
+}
+
+/* ─── Selection Enhancement ─── */
+::selection {
+  background: rgba(212, 175, 110, 0.22);
+  color: #f0d898;
+  text-shadow: none;
+}

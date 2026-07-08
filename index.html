@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>My Beloved Angel.</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@300;400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/effects.css" />
+
+  <!-- PATCH: Fix Continue button position in Scene 3 & 4 -->
+  <style>
+    /* 1. Ensure the scene wrappers are position contexts */
+    #scene-3 .photogrid-wrap,
+    #scene-4 .msgslider-wrap {
+      position: relative;
+    }
+
+    /* 2. Pin buttons to bottom-right, override any fixed/transform/flex */
+    #scene-3 .scene-continue-fixed,
+    #scene-4 .scene-continue-fixed {
+      position: absolute !important;
+      bottom: 20px !important;
+      right: 30px !important;
+      top: auto !important;
+      left: auto !important;
+      transform: none !important;
+      align-self: unset !important;
+      justify-self: unset !important;
+      margin: 0 !important;
+      z-index: 9999;
+      background: none;
+      border: none;
+      color: #c8a96a;
+      letter-spacing: 3px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* 3. Mobile: tighten inset so it never clips off-screen */
+    @media (max-width: 480px) {
+      #scene-3 .scene-continue-fixed,
+      #scene-4 .scene-continue-fixed {
+        bottom: 14px !important;
+        right: 16px !important;
+      }
+    }
+  </style>
+
+  <!-- Loading overlay critical styles (inline to prevent FOUC) -->
+  <style>
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #04030a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.6rem;
+      transition: opacity 0.8s ease;
+    }
+    #loading-overlay.hidden { opacity: 0; pointer-events: none; }
+
+    .loading-monogram {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 300;
+      color: #d4af6e;
+      letter-spacing: 0.5em;
+      text-indent: 0.5em;
+      opacity: 0;
+      animation: loader-fade-in 1s ease 0.3s forwards;
+    }
+    @keyframes loader-fade-in { to { opacity: 1; } }
+
+    .loading-bar-track {
+      width: min(260px, 60vw);
+      height: 1px;
+      background: rgba(212,175,110,0.15);
+      position: relative;
+      overflow: visible;
+    }
+    #loading-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(212,175,110,0.4), #d4af6e, rgba(212,175,110,0.4));
+      transition: width 0.3s ease;
+      position: relative;
+    }
+    #loading-bar-fill::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 50%;
+      transform: translate(50%, -50%);
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #d4af6e;
+      box-shadow: 0 0 10px rgba(212,175,110,0.8);
+    }
+    .loading-meta {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      opacity: 0;
+      animation: loader-fade-in 0.8s ease 0.6s forwards;
+    }
+    #loading-percentage {
+      font-family: 'Cinzel', serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.35em;
+      color: rgba(212,175,110,0.6);
+      min-width: 3.2em;
+      text-align: right;
+    }
+    #loading-label {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: clamp(0.75rem, 2vw, 0.9rem);
+      color: rgba(245,237,224,0.35);
+      letter-spacing: 0.08em;
+    }
+    .loading-gem {
+      font-family: 'Cinzel', serif;
+      font-size: 0.4rem;
+      color: rgba(212,175,110,0.4);
+      letter-spacing: 0.4em;
+      opacity: 0;
+      animation: loader-fade-in 0.8s ease 0.9s forwards,
+                 gem-pulse 3s ease-in-out 1.2s infinite;
+    }
+    @keyframes gem-pulse {
+      0%, 100% { opacity: 0.4; }
+      50%       { opacity: 0.9; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOADING OVERLAY — controlled by preloader.js -->
+  <div id="loading-overlay" role="status" aria-label="Loading experience">
+    <p class="loading-monogram">N</p>
+    <div class="loading-bar-track">
+      <div id="loading-bar-fill"></div>
+    </div>
+    <div class="loading-meta">
+      <span id="loading-percentage">0%</span>
+      <span id="loading-label">Preparing your evening…</span>
+    </div>
+    <p class="loading-gem">◆</p>
+  </div>
+
+  <!-- Progress Bar -->
+  <div id="progress-bar" aria-hidden="true">
+    <div id="progress-fill"></div>
+  </div>
+
+  <!-- Scene Dots — 6 scenes: 0=Intro, 1=Countdown, 2=Hero, 3=Gallery, 4=Message, 5=Final -->
+  <nav id="scene-dots" aria-label="Scene navigation">
+    <button class="dot active" data-scene="0" aria-label="Intro"></button>
+    <button class="dot" data-scene="1" aria-label="Countdown"></button>
+    <button class="dot" data-scene="2" aria-label="Hero"></button>
+    <button class="dot" data-scene="3" aria-label="Gallery"></button>
+    <button class="dot" data-scene="4" aria-label="Message"></button>
+    <button class="dot" data-scene="5" aria-label="Final"></button>
+  </nav>
+
+  <!-- ARIA live region for screen readers -->
+  <div id="scene-announce" aria-live="polite" aria-atomic="true"
+       style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;"></div>
+
+  <!-- ══════════ SCENE 0 — INTRO ══════════ -->
+  <section class="scene active" id="scene-0" data-index="0">
+    <canvas id="canvas-intro" aria-hidden="true"></canvas>
+    <div class="scene-inner">
+      <p class="intro-eyebrow">You are cordially invited</p>
+      <h1 class="intro-title">
+        <span class="intro-line-1">A Little Surprise</span>
+        <em class="intro-line-2">Made With Love</em>
+      </h1>
+      <div class="intro-rule">
+        <span class="rule-dash"></span>
+        <span class="rule-gem">◆</span>
+        <span class="rule-dash"></span>
+      </div>
+      <p class="intro-begin">Tap anywhere to begin</p>
+    </div>
+  </section>
+
+  <!-- ══════════ SCENE 1 — COUNTDOWN ══════════ -->
+  <section class="scene" id="scene-1" data-index="1">
+    <div class="countdown-wrap">
+      <svg class="countdown-ring-svg" viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="ring-track" cx="60" cy="60" r="54"/>
+        <circle class="ring-progress" cx="60" cy="60" r="54" id="ring-progress-el"/>
+      </svg>
+      <div class="countdown-num" id="countdown-num">3</div>
+    </div>
+    <p class="countdown-label">preparing something for you…</p>
+  </section>
+
+  <!-- ══════════ SCENE 2 — HERO ══════════ -->
+  <section class="scene" id="scene-2" data-index="2">
+    <canvas id="canvas-hero" aria-hidden="true"></canvas>
+    <div class="orb orb-a" aria-hidden="true"></div>
+    <div class="orb orb-b" aria-hidden="true"></div>
+    <div class="scene-inner hero-inner">
+      <p class="hero-pre">ENTERING</p>
+      <h2 class="hero-name">ANGEL</h2>
+      <div class="hero-rule">
+        <span class="rule-dash"></span>
+        <span class="rule-gem">◆</span>
+        <span class="rule-dash"></span>
+      </div>
+      <p class="hero-tagline">Everything about you matters &nbsp;·&nbsp; This is for you</p>
+      <button class="hero-cta" id="hero-cta">
+        <span class="cta-text">Let It Begin</span>
+        <span class="cta-arrow">↓</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════ SCENE 3 — PHOTO GRID ══════════ -->
+  <section class="scene" id="scene-3" data-index="3">
+    <div class="photogrid-wrap">
+      <div class="photogrid-header">
+        <p class="photogrid-eyebrow">All About You</p>
+        <div class="intro-rule" style="margin:0.6rem auto 0">
+          <span class="rule-dash"></span>
+          <span class="rule-gem">◆</span>
+          <span class="rule-dash"></span>
+        </div>
+      </div>
+
+      <div class="photo-grid" id="photo-grid">
+        <div class="photo-frame">
+          <div class="photo-frame-inner">
+            <img src="assets/img1.jpg" alt="Memory 1" loading="lazy" />
+            <div class="photo-caption">You</div>
+          </div>
+        </div>
+        <div class="photo-frame">
+          <div class="photo-frame-inner">
+            <img src="assets/img2.jpg" alt="Memory 2" loading="lazy" />
+            <div class="photo-caption">Are</div>
+          </div>
+        </div>
+        <div class="photo-frame">
+          <div class="photo-frame-inner">
+            <img src="assets/img3.jpg" alt="Memory 3" loading="lazy" />
+            <div class="photo-caption">So</div>
+          </div>
+        </div>
+        <div class="photo-frame">
+          <div class="photo-frame-inner">
+            <img src="assets/img4.jpg" alt="Memory 4" loading="lazy" />
+            <div class="photo-caption">Beautiful</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="scene-continue-fixed" id="photogrid-next" aria-label="Continue to messages">
+        <span>Continue</span>
+        <span class="continue-arrow">→</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════ SCENE 4 — MESSAGE SLIDER ══════════ -->
+  <section class="scene" id="scene-4" data-index="4">
+    <div class="msgslider-wrap">
+      <p class="msgslider-eyebrow">A Message Just for You</p>
+
+      <div class="msgslider-viewport" id="msgslider-viewport">
+        <div class="msgslider-track" id="msgslider-track">
+          <div class="msg-slide active">
+            <div class="msg-slide-img-wrap">
+              <img src="assets/img1.jpg" alt="A special moment" loading="lazy" />
+            </div>
+            <div class="msg-slide-content">
+              <p class="msg-slide-num">01</p>
+              <p class="msg-slide-text">
+                Of all the things that have happened in my life, you are the part I want to cherish and hold onto the most. Thank you for being here, in your own simple yet meaningful way. </p>
+            </div>
+          </div>
+
+          <div class="msg-slide">
+            <div class="msg-slide-img-wrap">
+              <img src="assets/img2.jpg" alt="Memories together" loading="lazy" />
+            </div>
+            <div class="msg-slide-content">
+              <p class="msg-slide-num">02</p>
+              <p class="msg-slide-text">
+                You might not always realize it, but your presence makes everything feel lighter. Just having you there is enough. </p>
+            </div>
+          </div>
+
+          <div class="msg-slide">
+            <div class="msg-slide-img-wrap">
+              <img src="assets/img3.jpg" alt="Golden times" loading="lazy" />
+            </div>
+            <div class="msg-slide-content">
+              <p class="msg-slide-num">03</p>
+              <p class="msg-slide-text">
+                I don't need much to be happy, because just having you is more than enough.. </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="msgslider-nav">
+        <button class="msgslider-prev" id="msgslider-prev" aria-label="Previous message">←</button>
+        <div class="msgslider-pips" id="msgslider-pips" aria-hidden="true">
+          <span class="msgslider-pip active"></span>
+          <span class="msgslider-pip"></span>
+          <span class="msgslider-pip"></span>
+        </div>
+        <button class="msgslider-next" id="msgslider-next" aria-label="Next message">→</button>
+      </div>
+
+      <button class="scene-continue-fixed" id="scene4-continue" aria-label="Continue to finale">
+        <span>Continue</span>
+        <span class="continue-arrow">→</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════ SCENE 5 — FINAL ══════════ -->
+  <section class="scene" id="scene-5" data-index="5">
+    <canvas id="canvas-final" aria-hidden="true"></canvas>
+    <div class="scene-inner final-inner">
+      <p class="final-pre">Thank you for being here</p>
+      <h2 class="final-title">I LOVE YOU</h2>
+      <div class="final-heart" aria-hidden="true">♡</div>
+      <p class="final-tagline">you deserve all the good things in life.</p>
+      <button class="replay-btn" id="replay-btn">
+        <span class="replay-icon" aria-hidden="true">↺</span>
+        <span>Replay the night</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SCRIPTS — strict load order:
+       1. GSAP  (animation library)
+       2. Three.js  (3D library)
+       3. core: config → state
+       4. systems: preloader
+       5. main: script.js  (scene engine)
+       6. engine: scene-manager → three-background → animation-engine → interaction-engine
+       7. systems: performance
+       8. core: app-controller  (boots last, wires everything)
+  ══════════════════════════════════════════════════ -->
+
+  <!-- 1. GSAP — must be FIRST so all modules can use it -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+
+  <!-- 2. Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
+
+  <!-- 3. Core: config + state (no dependencies) -->
+  <script src="js/core/config.js"></script>
+  <script src="js/core/state.js"></script>
+
+  <!-- 4. Preloader (needs State, GSAP) -->
+  <script src="js/systems/preloader.js"></script>
+
+  <!-- 5. Main scene engine (needs GSAP, Three.js, State) -->
+  <script src="js/main/script.js"></script>
+
+  <!-- 6. Enhancement engines (need GSAP, State, App) -->
+  <script src="js/engine/scene-manager.js"></script>
+  <script src="js/systems/three-background.js"></script>
+  <script src="js/engine/animation-engine.js"></script>
+  <script src="js/engine/interaction-engine.js"></script>
+
+  <!-- 7. Performance monitoring (needs all engines loaded) -->
+  <script src="js/systems/performance.js"></script>
+
+  <!-- 8. App controller — boots LAST, wires everything together -->
+  <script src="js/core/app-controller.js"></script>
+
+  <!-- Boot: run preloader then hand off to experience -->
+  <script>
+    (function () {
+      'use strict';
+
+      // Guard: if any critical library failed to load, degrade gracefully
+      if (typeof gsap === 'undefined') {
+        console.error('[Boot] GSAP failed to load from CDN');
+        // Hide loader and show experience anyway
+        var overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'none';
+        return;
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        if (window.Preloader) {
+          window.Preloader.run(function () {
+            console.log('[Boot] ✓ Preload complete — experience live');
+          });
+        } else {
+          // Preloader failed to load — hide overlay and proceed
+          var overlay = document.getElementById('loading-overlay');
+          if (overlay) {
+            gsap.to(overlay, {
+              opacity: 0, duration: 0.8,
+              onComplete: function () { overlay.style.display = 'none'; }
+            });
+          }
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>
